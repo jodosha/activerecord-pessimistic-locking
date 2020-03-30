@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  key: MyString
+  name: MyString
+  payload: 
+  processed_at: 2020-03-30 16:45:47
+  published_at: 2020-03-30 16:45:47
+
+two:
+  key: MyString
+  name: MyString
+  payload: 
+  processed_at: 2020-03-30 16:45:47
+  published_at: 2020-03-30 16:45:47
