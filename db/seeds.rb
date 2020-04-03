@@ -2,11 +2,11 @@
 
 require "securerandom"
 
-100.times do
+100.times do |i|
   OutboundEvent.create!(
-    key: SecureRandom.uuid,
+    key: "gid://company-#{::Kernel.rand(10).to_i}",
     name: "test",
-    payload: {},
+    payload: { counter: i },
     published_at: Time.now.utc
   )
 end

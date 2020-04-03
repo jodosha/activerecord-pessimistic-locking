@@ -1,0 +1,2 @@
+class InboundEvent < ApplicationRecord
+end

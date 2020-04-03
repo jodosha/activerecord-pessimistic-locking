@@ -8,47 +8,14 @@ namespace :concurrency do
       concurrency_level.times.map do
         Thread.new do
           OutboundEvent.transaction do
-            event = OutboundEvent.for_processing
-
-            if event.is_a?(OutboundEvent)
+            events = OutboundEvent.for_processing
+            events.each do |event|
               puts "[debug] processing #{event.id}"
-              sleep 0.5
-
-              if Kernel.rand(100) < 10
-                puts "[debug] error on event #{event.id}"
-                raise ActiveRecord::Rollback, "Kafka error"
-              end
-
-              event.processed!
+              DeliveryBoy.produce!(event.payload.to_json, topic: event.name, partition_key: event.partition_key)
             end
-          end
-        end
-      end
 
-      sleep 1
-    end
-  end
-
-  task reproduce: :environment do
-    concurrency_level = ActiveRecord::Base.connection_pool.size
-
-    loop do
-      concurrency_level.times.map do
-        Thread.new do
-          OutboundEvent.transaction do
-            event = OutboundEvent.for_broken_processing
-
-            if event.is_a?(OutboundEvent)
-              puts "[debug] processing #{event.id}"
-              sleep 0.5
-
-              if Kernel.rand(100) < 10
-                puts "[debug] error on event #{event.id}"
-                raise ActiveRecord::Rollback, "Kafka error"
-              end
-
-              event.processed!
-            end
+            DeliveryBoy.deliver_messages
+            OutboundEvent.mark_processed(events.ids)
           end
         end
       end
