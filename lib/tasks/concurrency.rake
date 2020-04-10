@@ -7,15 +7,13 @@ namespace :concurrency do
     loop do
       concurrency_level.times.map do
         Thread.new do
-          OutboundEvent.transaction do
-            events = OutboundEvent.for_processing
-            events.each do |event|
-              puts "[debug] processing #{event.id}"
-              DeliveryBoy.produce!(event.payload.to_json, topic: event.name, partition_key: event.partition_key)
-            end
+          OutboundEvent.find_each_processable do |outbound_event|
+            puts "[debug] processing #{outbound_event.id}"
+            WaterDrop::SyncProducer.call(outbound_event.payload.to_json,
+                                         topic: outbound_event.name,
+                                         partition_key: outbound_event.partition_key)
 
-            DeliveryBoy.deliver_messages
-            OutboundEvent.mark_processed(events.ids)
+            outbound_event.processed!
           end
         end
       end
