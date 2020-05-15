@@ -21,4 +21,14 @@ namespace :concurrency do
       sleep 1
     end
   end
+
+  task data: :environment do
+    sleep_time = (1..10).to_a
+
+    loop do
+      puts "New data #{Time.now.utc}"
+      Rake::Task["db:seed"].invoke
+      sleep sleep_time.sample
+    end
+  end
 end
